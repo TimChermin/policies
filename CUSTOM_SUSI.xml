@@ -1,0 +1,38 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="Tenant.onmicrosoft.com" PolicyId="B2C_1A_Custom_SUSI" PublicPolicyUri="http://Tenant.onmicrosoft.com/B2C_1A_Custom_SUSI" TenantObjectId="db881d142bc4" DeploymentMode="Development" UserJourneyRecorderEndpoint="urn:journeyrecorder:applicationinsights">
+  <BasePolicy>
+    <TenantId>Tenant.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_Custom_UserJourney</PolicyId>
+  </BasePolicy>
+  <RelyingParty>
+    <DefaultUserJourney ReferenceId="AccountLinkSignUpOrSignIn" />
+    <!-- https://docs.microsoft.com/en-us/azure/active-directory-b2c/session-behavior?pivots=b2c-custom-policy -->
+    <UserJourneyBehaviors>
+      <!-- <SingleSignOn Scope="Application" /> Suppressed, Tenant, Application, or Policy. https://docs.microsoft.com/en-us/azure/active-directory-b2c/relyingparty 
+      <SessionExpiryType>Absolute</SessionExpiryType> Rolling or Absolute
+      <SessionExpiryInSeconds>86400</SessionExpiryInSeconds> between 900 seconds (15min) and 86.400 seconds (24 hours) -->
+    </UserJourneyBehaviors>
+    <TechnicalProfile Id="PolicyProfile">
+      <DisplayName>PolicyProfile</DisplayName>
+      <Protocol Name="OpenIdConnect" />
+      <InputClaims>
+        <InputClaim ClaimTypeReferenceId="passwordPolicies" DefaultValue="DisablePasswordExpiration, DisableStrongPassword" />
+      </InputClaims>
+      <OutputClaims>
+        <OutputClaim ClaimTypeReferenceId="displayName" />
+        <OutputClaim ClaimTypeReferenceId="givenName" />
+        <OutputClaim ClaimTypeReferenceId="surname" />
+        <OutputClaim ClaimTypeReferenceId="email" />
+        <OutputClaim ClaimTypeReferenceId="objectId" PartnerClaimType="sub" />
+        <OutputClaim ClaimTypeReferenceId="identityProvider" />
+        <OutputClaim ClaimTypeReferenceId="currentUserIdentities" />
+        <OutputClaim ClaimTypeReferenceId="needToMigrate" DefaultValue="false" />
+        <OutputClaim ClaimTypeReferenceId="extension_AyblerId" PartnerClaimType="extension_AyblerId" />
+        <OutputClaim ClaimTypeReferenceId="extension_OrganizationId" PartnerClaimType="extension_OrganizationId" />
+        <OutputClaim ClaimTypeReferenceId="extension_requiresMigration" PartnerClaimType="extension_requiresMigration" />
+        <OutputClaim ClaimTypeReferenceId="migrationRequired" PartnerClaimType="migrationRequired" />
+        <OutputClaim ClaimTypeReferenceId="tenantId" AlwaysUseDefaultValue="true" DefaultValue="{Policy:TenantObjectId}" />
+      </OutputClaims>
+      <SubjectNamingInfo ClaimType="sub" />
+    </TechnicalProfile>
+  </RelyingParty>
+</TrustFrameworkPolicy>

@@ -1,0 +1,321 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="Tenant.onmicrosoft.com" PolicyId="B2C_1A_Custom_UserJourney" PublicPolicyUri="http://Tenant.onmicrosoft.com/B2C_1A_Custom_UserJourney" TenantObjectId="dbbc4">
+  <BasePolicy>
+    <TenantId>Tenant.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_Custom_ClaimsProviders</PolicyId>
+  </BasePolicy>
+  <UserJourneys>
+    <UserJourney Id="AccountLinkSignUpOrSignIn" DefaultCpimIssuerTechnicalProfileReferenceId="JwtIssuer">
+      <OrchestrationSteps>
+        <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.signuporsignin">
+          <ClaimsProviderSelections>
+            <ClaimsProviderSelection TargetClaimsExchangeId="FacebookExchange" />
+            <ClaimsProviderSelection TargetClaimsExchangeId="GoogleExchange" />
+            <!-- <ClaimsProviderSelection TargetClaimsExchangeId="MicrosoftAccountExchange" /> -->
+            <ClaimsProviderSelection TargetClaimsExchangeId="AzureADCommonExchange" />
+            <ClaimsProviderSelection ValidationClaimsExchangeId="LocalAccountSigninEmailExchange" />
+          </ClaimsProviderSelections>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="LocalAccountSigninEmailExchange" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- Check if the user has selected to sign in using one of the social providers -->
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="FacebookExchange" TechnicalProfileReferenceId="Facebook-OAUTH-SignIn" />
+            <ClaimsExchange Id="GoogleExchange" TechnicalProfileReferenceId="Google-OAUTH-SignIn" />
+            <!-- <ClaimsExchange Id="MicrosoftAccountExchange" TechnicalProfileReferenceId="MSA-OIDC-SignIn" /> -->
+            <ClaimsExchange Id="AzureADCommonExchange" TechnicalProfileReferenceId="AADCommon-OIDC-SignIn" />
+            <ClaimsExchange Id="SignUpWithLogonEmailExchange" TechnicalProfileReferenceId="LocalAccountSignUpWithLogonEmail-HasEmailFlagged" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- if social account auth, try find an account with the incoming email, and return the LocalAccountEmail-->
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>authenticationSource</Value>
+              <Value>localAccountAuthentication</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="FindLocalAccountWithSocialEmail" TechnicalProfileReferenceId="AAD-FindLocalAccountWithSocialEmail" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- Subjourney : 
+        Handle the case of the incoming social accounts email matching a an email of another account in directory (social/local).
+
+        Since all signups will provision as local (as signInName.emailaddress is being populated for local and social sign ups)
+        If LocalAccountEmail exists, then this Social ID must be linked to an existing Local Account unless its already linked -->
+        <OrchestrationStep Order="4" Type="InvokeSubJourney">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>authenticationSource</Value>
+              <Value>localAccountAuthentication</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>LocalAccountEmail</Value>
+              <Value>false</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>containsIssuerAlready</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <JourneyList>
+            <Candidate SubJourneyReferenceId="HandleLinkLocalToSocial" />
+          </JourneyList>
+        </OrchestrationStep>
+        <!-- Subjourney : 
+        Handle new social account sign in.
+
+        If LocalAccountEmail does not exist, and is not LocalAccount auth, then this Social Id must be provisioned as normal
+        If its a local account auth, then skip this entirely -->
+        <OrchestrationStep Order="5" Type="InvokeSubJourney">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>authenticationSource</Value>
+              <Value>localAccountAuthentication</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="false">
+              <Value>LocalAccountEmail</Value>
+              <Value>false</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>authenticationSource</Value>
+              <Value>localAccountAuthentication</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <JourneyList>
+            <Candidate SubJourneyReferenceId="ProvisionOrSignInNewSocialAccount" />
+          </JourneyList>
+        </OrchestrationStep>
+        <OrchestrationStep Order="6" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="7" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+      <ClientDefinition ReferenceId="DefaultWeb" />
+    </UserJourney>
+  </UserJourneys>
+  <SubJourneys>
+    <SubJourney Id="ProvisionOrSignInNewSocialAccount" Type="Transfer">
+      <OrchestrationSteps>
+        <!-- should always be no account present in this path -->
+        <OrchestrationStep Order="1" Type="ClaimsExchange">
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserReadUsingUserIdentity" TechnicalProfileReferenceId="AAD-UserReadUsingUserIdentity-NoError" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- Show self-asserted page only if the directory does not have the user account already (i.e. we do not have an objectId).  -->
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="SelfAsserted-Social" TechnicalProfileReferenceId="SelfAsserted-Social-v2" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="3" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="true">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserWrite" TechnicalProfileReferenceId="AAD-UserWriteUsingUserIdentity" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="4" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+    </SubJourney>
+    <SubJourney Id="HandleLinkLocalToSocial" Type="Transfer">
+      <OrchestrationSteps>
+        <!-- if we got an local account email now and is social auth not associated with this email, 
+        present page to sign in with local or any other socials as account exists with this email -->
+        <OrchestrationStep Order="1" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.idpselections">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>authenticationSource</Value>
+              <Value>localAccountAuthentication</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <!-- skip if this social idp already linked to local account -->
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>containsIssuerAlready</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>extension_haspassword</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsProviderSelections DisplayOption="ShowSingleProvider">
+            <ClaimsProviderSelection TargetClaimsExchangeId="LinkGoogleExchange1" />
+            <ClaimsProviderSelection TargetClaimsExchangeId="LinkFacebookExchange1" />
+            <ClaimsProviderSelection TargetClaimsExchangeId="LinkAADCommonExchange1" />
+            <!-- <ClaimsProviderSelection TargetClaimsExchangeId="LinkMSAExchange1" /> -->
+          </ClaimsProviderSelections>
+        </OrchestrationStep>
+        <OrchestrationStep Order="2" Type="ClaimsExchange">
+          <Preconditions>
+            <!-- skip if this social idp already linked to local account -->
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>executedLoginWithLocalToLink</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>extension_haspassword</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="LinkFacebookExchange1" TechnicalProfileReferenceId="Facebook-OAUTH-Link" />
+            <ClaimsExchange Id="LinkGoogleExchange1" TechnicalProfileReferenceId="Google-OAUTH-Link" />
+            <ClaimsExchange Id="LinkAADCommonExchange1" TechnicalProfileReferenceId="AADCommon-OAUTH-Link" />
+            <!-- <ClaimsExchange Id="LinkMSAExchange1" TechnicalProfileReferenceId="MSA-OAUTH-Link" /> -->
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="3" Type="CombinedSignInAndSignUp" ContentDefinitionReferenceId="api.signuporsignin">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>authenticationSource</Value>
+              <Value>localAccountAuthentication</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>extension_haspassword</Value>
+              <Value>False</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <!-- skip if this social idp already linked to local account -->
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>containsIssuerAlready</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsProviderSelections DisplayOption="ShowSingleProvider">
+            <ClaimsProviderSelection TargetClaimsExchangeId="LinkFacebookExchange2" />
+            <ClaimsProviderSelection TargetClaimsExchangeId="LinkGoogleExchange2" />
+            <!-- <ClaimsProviderSelection TargetClaimsExchangeId="LinkMSAExchange2" /> -->
+            <ClaimsProviderSelection TargetClaimsExchangeId="LinkAADCommonExchange2" />
+            <ClaimsProviderSelection TargetClaimsExchangeId="LocalAccountSigninEmailExchangeLink2" />
+          </ClaimsProviderSelections>
+        </OrchestrationStep>
+        <OrchestrationStep Order="4" Type="ClaimsExchange">
+          <Preconditions>
+            <!-- skip if this social idp already linked to local account -->
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>executedLoginWithLocalToLink</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>extension_haspassword</Value>
+              <Value>False</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="LinkFacebookExchange2" TechnicalProfileReferenceId="Facebook-OAUTH-Link" />
+            <ClaimsExchange Id="LinkGoogleExchange2" TechnicalProfileReferenceId="Google-OAUTH-Link" />
+            <!-- <ClaimsExchange Id="LinkMSAExchange2" TechnicalProfileReferenceId="MSA-OAUTH-Link" /> -->
+            <ClaimsExchange Id="LinkAADCommonExchange2" TechnicalProfileReferenceId="AADCommon-OAUTH-Link" />
+            <ClaimsExchange Id="LocalAccountSigninEmailExchangeLink2" TechnicalProfileReferenceId="SelfAsserted-LocalAccountSignin-Email-Link" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- use the userIdentity from the linking auth to check if the objectId of that user matches the local account from the initial call-->
+        <OrchestrationStep Order="5" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>executedLoginWithLocalToLink</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="LookupProofAccount" TechnicalProfileReferenceId="AAD-UserReadUsingUserIdentityToLink-NoError" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- Now comapre the email from Social Link vs Local-->
+        <OrchestrationStep Order="6" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>executedLoginWithLocalToLink</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="CheckProofOfSocialObjectIdMatchesLocal" TechnicalProfileReferenceId="CheckProofOfSocialObjectIdMatchesLocal" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- Kill journey if proof of social didnt match local email to begin with-->
+        <OrchestrationStep Order="7" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>executedLoginWithLocalToLink</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>SocialProofMatchesLocalAccount</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="ProofOfSocialEmailDidntMatchLocalEmail" TechnicalProfileReferenceId="SelfAsserted-Error" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <!-- Sample: Link the new social account. -->
+        <OrchestrationStep Order="8" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimEquals" ExecuteActionsIf="true">
+              <Value>containsIssuerAlready</Value>
+              <Value>True</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="UpdateUserIdentities" TechnicalProfileReferenceId="AAD-UpdateUserIdentitiesToLocalUser" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="9" Type="ClaimsExchange">
+          <Preconditions>
+            <Precondition Type="ClaimsExist" ExecuteActionsIf="false">
+              <Value>objectId</Value>
+              <Action>SkipThisOrchestrationStep</Action>
+            </Precondition>
+          </Preconditions>
+          <ClaimsExchanges>
+            <ClaimsExchange Id="AADUserReadWithObjectId" TechnicalProfileReferenceId="AAD-UserReadUsingObjectId" />
+          </ClaimsExchanges>
+        </OrchestrationStep>
+        <OrchestrationStep Order="10" Type="SendClaims" CpimIssuerTechnicalProfileReferenceId="JwtIssuer" />
+      </OrchestrationSteps>
+    </SubJourney>
+  </SubJourneys>
+</TrustFrameworkPolicy>

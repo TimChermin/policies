@@ -1,0 +1,401 @@
+<TrustFrameworkPolicy xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="http://schemas.microsoft.com/online/cpim/schemas/2013/06" PolicySchemaVersion="0.3.0.0" TenantId="Tenant.onmicrosoft.com" PolicyId="B2C_1A_Custom_BuildingBlocks" PublicPolicyUri="http://Tenant.onmicrosoft.com/B2C_1A_Custom_BuildingBlocks" TenantObjectId="d142bc4">
+  <BasePolicy>
+    <TenantId>Tenant.onmicrosoft.com</TenantId>
+    <PolicyId>B2C_1A_Custom_UI</PolicyId>
+  </BasePolicy>
+  <BuildingBlocks>
+        <ClaimsSchema>
+          <!--Demo: This claim indicates whether the user need to migrate-->
+      <ClaimType Id="needToMigrate">
+        <DisplayName>needToMigrate</DisplayName>
+        <DataType>boolean</DataType>
+        <AdminHelpText>Indicates whether the user need to migrate</AdminHelpText>
+        <UserHelpText>Indicates whether the user need to migrate</UserHelpText>
+      </ClaimType>
+          <ClaimType Id="objectIdNotFound">
+            <DisplayName>Used for comparison</DisplayName>
+            <DataType>string</DataType>
+        </ClaimType>
+
+      <ClaimType Id="MadeRestCall">
+        <DisplayName>Used for comparison</DisplayName>
+        <DataType>boolean</DataType>
+    </ClaimType>
+
+        <ClaimType Id="userNotFound">
+            <DisplayName>Used for comparison</DisplayName>
+            <DataType>boolean</DataType>
+        </ClaimType>
+      <ClaimType Id="legacyPassword">
+        <DisplayName>legacyPassword</DisplayName>
+        <DataType>string</DataType>
+      </ClaimType>
+      <ClaimType Id="useInputPassword">
+        <DisplayName>useInputPassword</DisplayName>
+        <DataType>boolean</DataType>
+      </ClaimType> 
+      <ClaimType Id="extension_AyblerId">
+        <DisplayName>extension_AyblerId</DisplayName>
+        <DataType>int</DataType>
+        <AdminHelpText>extension_AyblerId</AdminHelpText>
+        <UserHelpText>extension_AyblerId</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="AyblerUserId">
+        <DisplayName>AyblerUserId</DisplayName>
+        <DataType>int</DataType>
+        <AdminHelpText>AyblerUserId</AdminHelpText>
+        <UserHelpText>AyblerUserId</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="extension_OrganizationId">
+        <DisplayName>extension_OrganizationId</DisplayName>
+        <DataType>int</DataType>
+        <AdminHelpText>extension_OrganizationId</AdminHelpText>
+        <UserHelpText>extension_OrganizationId</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="OrganizationId">
+        <DisplayName>OrganizationId</DisplayName>
+        <DataType>int</DataType>
+        <AdminHelpText>OrganizationId</AdminHelpText>
+        <UserHelpText>OrganizationId</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="AzureSecret">
+        <DisplayName>AzureSecret</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>AzureSecret</AdminHelpText>
+        <UserHelpText>AzureSecret</UserHelpText>
+      </ClaimType>
+      <!-- Holds the value of the migration status on the Azure AD B2C account -->
+      <ClaimType Id="extension_requiresMigration">
+        <DisplayName>extension_requiresMigration</DisplayName>
+        <DataType>boolean</DataType>
+        <AdminHelpText>extension_requiresMigration</AdminHelpText>
+        <UserHelpText>extension_requiresMigration</UserHelpText>
+      </ClaimType>
+      <!-- Holds the value of whether the authentication succeeded at the legacy IdP -->
+      <ClaimType Id="tokenSuccess">
+        <DisplayName>tokenSuccess</DisplayName>
+        <DataType>boolean</DataType>
+        <AdminHelpText>tokenSuccess</AdminHelpText>
+        <UserHelpText>tokenSuccess</UserHelpText>
+      </ClaimType>
+      <!-- Holds the value 'false' when the legacy IdP authentication succeeded -->
+      <ClaimType Id="migrationRequired">
+        <DisplayName>migrationRequired</DisplayName>
+        <DataType>boolean</DataType>
+        <AdminHelpText>migrationRequired</AdminHelpText>
+        <UserHelpText>migrationRequired</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="role">
+        <DisplayName>Role</DisplayName>
+        <DataType>stringCollection</DataType>
+      </ClaimType>
+      <ClaimType Id="extension_haspassword">
+        <DisplayName>has password</DisplayName>
+        <DataType>boolean</DataType>
+        <AdminHelpText>user has password</AdminHelpText>
+        <UserHelpText>user has password</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="SocialProofMatchesLocalAccount">
+        <DisplayName>SocialProofMatchesLocalAccount</DisplayName>
+        <DataType>boolean</DataType>
+        <AdminHelpText>SocialProofMatchesLocalAccount</AdminHelpText>
+        <UserHelpText>SocialProofMatchesLocalAccount</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="currentIssuers">
+        <DisplayName>issuers</DisplayName>
+        <DataType>stringCollection</DataType>
+        <UserHelpText>User identity providers. This information is received from alternativeSecurityIds</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="executedLoginWithLocalToLink">
+        <DisplayName>executedLoginWithLocalToLink</DisplayName>
+        <DataType>boolean</DataType>
+        <AdminHelpText>executedLoginWithLocalToLink</AdminHelpText>
+        <UserHelpText>executedLoginWithLocalToLink</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="localAccountUpn">
+        <DisplayName>localAccountUpn</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>localAccountUpn</AdminHelpText>
+        <UserHelpText>localAccountUpn</UserHelpText>
+        <UserInputType>Readonly</UserInputType>
+      </ClaimType>
+      <ClaimType Id="localAccountEmail">
+        <DisplayName>localAccountEmail</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>localAccountEmail</AdminHelpText>
+        <UserHelpText>localAccountEmail</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="readOnlyEmail">
+        <DisplayName>Email Address</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText />
+        <UserInputType>Readonly</UserInputType>
+      </ClaimType>
+      <ClaimType Id="linkedEmail">
+        <DisplayName>Email Address</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText />
+        <UserInputType>TextBox</UserInputType>
+      </ClaimType>
+      <ClaimType Id="linkLocalToThisSocial">
+        <DisplayName>linkLocalToThisSocial</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText />
+        <UserInputType>Readonly</UserInputType>
+      </ClaimType>
+      <ClaimType Id="containsIssuerAlready">
+        <DisplayName>containsIssuerAlready</DisplayName>
+        <DataType>boolean</DataType>
+        <UserHelpText />
+      </ClaimType>
+      <ClaimType Id="currentUserIdentities">
+        <DisplayName>currentUserIdentities</DisplayName>
+        <DataType>userIdentityCollection</DataType>
+        <AdminHelpText>currentUserIdentities</AdminHelpText>
+        <UserHelpText>currentUserIdentities</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="newUserIdentities">
+        <DisplayName>userIdentities</DisplayName>
+        <DataType>userIdentityCollection</DataType>
+        <AdminHelpText>userIdentities</AdminHelpText>
+        <UserHelpText>userIdentities</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="userIdentities">
+        <DisplayName>userIdentities</DisplayName>
+        <DataType>userIdentityCollection</DataType>
+        <AdminHelpText>userIdentities</AdminHelpText>
+        <UserHelpText>userIdentities</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="userIdentity">
+        <DisplayName>userIdentity</DisplayName>
+        <DataType>userIdentity</DataType>
+        <AdminHelpText>userIdentity</AdminHelpText>
+        <UserHelpText>userIdentity</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="objectIdToLink">
+        <DisplayName>objectIdToLink</DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>Second account user objectId</UserHelpText>
+      </ClaimType>
+      <!--Sample: Stores the error message if user exists-->
+      <ClaimType Id="errorMessage">
+        <DisplayName></DisplayName>
+        <DataType>string</DataType>
+        <UserHelpText>Add help text here</UserHelpText>
+        <UserInputType>Paragraph</UserInputType>
+      </ClaimType>
+      <ClaimType Id="issuerToUnlink">
+        <DisplayName>issuerToUnlink</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>issuerToUnlink</AdminHelpText>
+        <UserHelpText>issuerToUnlink</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="issuerToLink">
+        <DisplayName>issuerToLink</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>issuerToLink</AdminHelpText>
+        <UserHelpText>issuerToLink</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="issuerUserId">
+        <DisplayName>issuerUserId</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>issuerUserId</AdminHelpText>
+        <UserHelpText>issuerUserId</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="issuerUserIdToLink">
+        <DisplayName>issuerUserIdToLink</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>issuerUserIdToLink</AdminHelpText>
+        <UserHelpText>issuerUserIdToLink</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="userIdentityToLink">
+        <DisplayName>userIdentityToLink</DisplayName>
+        <DataType>userIdentity</DataType>
+        <AdminHelpText>userIdentityToLink</AdminHelpText>
+        <UserHelpText>userIdentityToLink</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="issuers">
+        <DisplayName>issuers</DisplayName>
+        <DataType>stringCollection</DataType>
+        <UserHelpText>User identity providers. This information is received from alternativeSecurityIds</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="socialEmail">
+        <DisplayName>socialEmail</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>socialEmail</AdminHelpText>
+        <UserHelpText>socialEmail</UserHelpText>
+      </ClaimType>
+      <ClaimType Id="socialEmailLinkAttempt">
+        <DisplayName>socialEmailLinkAttempt</DisplayName>
+        <DataType>string</DataType>
+        <AdminHelpText>socialEmailLinkAttempt</AdminHelpText>
+        <UserHelpText>socialEmailLinkAttempt</UserHelpText>
+      </ClaimType>
+    </ClaimsSchema>
+    <ClaimsTransformations>
+      <ClaimsTransformation Id="AssertObjectIdObjectIdNotFoundAreEqual" TransformationMethod="CompareClaims">
+        <InputClaims>
+        <InputClaim ClaimTypeReferenceId="objectId" TransformationClaimType="inputClaim1" />
+        <InputClaim ClaimTypeReferenceId="objectIdNotFound" TransformationClaimType="inputClaim2" />
+        </InputClaims>
+        <InputParameters>
+        <InputParameter Id="operator" DataType="string" Value="EQUAL" />
+        </InputParameters>
+        <OutputClaims>
+            <OutputClaim ClaimTypeReferenceId="userNotFound" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+    </ClaimsTransformation>
+      <ClaimsTransformation Id="CopySignInNameToReadOnly" TransformationMethod="FormatStringClaim">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="localAccountEmail" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="stringFormat" DataType="string" Value="{0}" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="readOnlyEmail" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="UserIdentitiesContainsCurrentIssuer" TransformationMethod="StringCollectionContainsClaim">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="currentIssuers" TransformationClaimType="collection" />
+          <InputClaim ClaimTypeReferenceId="identityProvider" TransformationClaimType="item" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="containsIssuerAlready" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <!--Sample: Extracts the list of social identity providers associated with the user -->
+      <ClaimsTransformation Id="ExtractCurrentIssuers" TransformationMethod="GetIssuersFromUserIdentityCollectionTransformation">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="currentUserIdentities" TransformationClaimType="userIdentityCollection" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="currentIssuers" TransformationClaimType="issuersCollection" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="AppendNewUserIdentityToCurrentUserIdentities" TransformationMethod="AddItemToUserIdentityCollection">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="userIdentity" TransformationClaimType="item" />
+          <InputClaim ClaimTypeReferenceId="currentUserIdentities" TransformationClaimType="collection" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="currentUserIdentities" TransformationClaimType="collection" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="CopyEmailToLinkedEmail" TransformationMethod="FormatStringClaim">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="signInName" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="stringFormat" DataType="string" Value="{0}" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="localAccountEmail" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="AssertEmailAndLinkedEmailAreEqual" TransformationMethod="AssertStringClaimsAreEqual">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="localAccountUpn" TransformationClaimType="inputClaim1" />
+          <InputClaim ClaimTypeReferenceId="userprincipalname" TransformationClaimType="inputClaim2" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="stringComparison" DataType="string" Value="ordinalIgnoreCase" />
+        </InputParameters>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="assertLocalObjectIdSameAsIncomingSocialObjectIdProof" TransformationMethod="CompareClaims">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="objectId" TransformationClaimType="inputClaim1" />
+          <InputClaim ClaimTypeReferenceId="objectIdToLink" TransformationClaimType="inputClaim2" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="operator" DataType="string" Value="EQUAL" />
+          <InputParameter Id="ignoreCase" DataType="string" Value="true" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="SocialProofMatchesLocalAccount" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="CreateRandomPassword" TransformationMethod="CreateRandomString">
+        <InputParameters>
+          <InputParameter Id="randomGeneratorType" DataType="string" Value="GUID" />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="newPassword" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="CreateUserMatchError" TransformationMethod="FormatStringClaim">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="issuerToLink" TransformationClaimType="inputClaim" />
+        </InputClaims>
+        <InputParameters>
+          <InputParameter Id="stringFormat" DataType="string" Value="The email provided by the Identity Provider did not match that associated with the initial Identity Providers sign in." />
+        </InputParameters>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="errorMessage" TransformationClaimType="outputClaim" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <!-- Sample: On sign-in (first time) with social account, create a userIdentity claim, using issuerUserId and issuer name -->
+      <ClaimsTransformation Id="CreateUserIdentity" TransformationMethod="CreateUserIdentity">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="issuerUserId" TransformationClaimType="issuerUserId" />
+          <InputClaim ClaimTypeReferenceId="identityProvider" TransformationClaimType="issuer" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="userIdentity" TransformationClaimType="userIdentity" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <!-- Sample: On sign-in (second time) with social account, create a userIdentityToLink claim, using issuerUserId and issuer name -->
+      <ClaimsTransformation Id="CreateUserIdentityToLink" TransformationMethod="CreateUserIdentity">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="issuerUserIdToLink" TransformationClaimType="issuerUserId" />
+          <InputClaim ClaimTypeReferenceId="issuerToLink" TransformationClaimType="issuer" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="userIdentityToLink" TransformationClaimType="userIdentity" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <!--Sample: Add a userIdentity to the userIdentities collection. .-->
+      <ClaimsTransformation Id="AppendUserIdentity" TransformationMethod="AddItemToUserIdentityCollection">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="userIdentity" TransformationClaimType="item" />
+          <InputClaim ClaimTypeReferenceId="userIdentities" TransformationClaimType="collection" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="userIdentities" TransformationClaimType="collection" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <ClaimsTransformation Id="AppendUserIdentityToLink" TransformationMethod="AddItemToUserIdentityCollection">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="userIdentityToLink" TransformationClaimType="item" />
+          <InputClaim ClaimTypeReferenceId="newUserIdentities" TransformationClaimType="collection" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="newUserIdentities" TransformationClaimType="collection" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <!--Sample: Removes an issuer from the  claim from the userIdentities collection-->
+      <ClaimsTransformation Id="RemoveUserIdentityFromCollectionByIssuer" TransformationMethod="RemoveUserIdentityFromCollectionByIssuer">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="issuerToUnlink" TransformationClaimType="issuer" />
+          <InputClaim ClaimTypeReferenceId="userIdentities" TransformationClaimType="collection" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="userIdentities" TransformationClaimType="collection" />
+        </OutputClaims>
+      </ClaimsTransformation>
+      <!--Sample: Extracts the list of social identity providers associated with the user -->
+      <ClaimsTransformation Id="ExtractIssuers" TransformationMethod="GetIssuersFromUserIdentityCollectionTransformation">
+        <InputClaims>
+          <InputClaim ClaimTypeReferenceId="userIdentities" TransformationClaimType="userIdentityCollection" />
+        </InputClaims>
+        <OutputClaims>
+          <OutputClaim ClaimTypeReferenceId="issuers" TransformationClaimType="issuersCollection" />
+        </OutputClaims>
+      </ClaimsTransformation>
+    </ClaimsTransformations>
+  </BuildingBlocks>
+</TrustFrameworkPolicy>
